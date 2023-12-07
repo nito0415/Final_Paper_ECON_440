@@ -1,0 +1,275 @@
+---
+title: "Final Paper"
+author: "Juan Sanchez, Jared Picco"
+date: "2023-12-07"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE)
+library(tidyverse)
+library(dplyr)
+library(plm)
+library(ggplot2)
+library(lmtest)
+library(sandwich)
+library(knitr)
+library(broom)
+library(readxl)
+library(AER)
+library(stargazer)
+library(foreign)
+library(Hmisc)
+library(MatchIt)
+library(mlogit)
+library(haven)
+library(estimatr)
+```
+
+
+# Introduction
+
+``` {r setup, echo=FALSE}
+options(scipen = 999)
+movie_data <- read_excel("/Users/juansanchez/Documents/GitHub/Final_Paper_ECON_440/moviedata.xlsx")
+
+summary(movie_data)
+
+# Could explain why the economic impact is different
+ggplot(movie_data, aes(x = month, y = revenue)) +
+  geom_bar(stat = "identity", fill = "purple", color = "black") +
+  labs(title = "Bar Plot of Revenue by Week",
+       x = "Month",
+       y = "Revenue ($)")
+
+# Weeks
+ggplot(movie_data, aes(x = tom_week_id, y = revenue)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black", alpha = 0.7) +
+  labs(title = "Bar Plot of Revenue by Week",
+       x = "tom_week_id",
+       y = "Revenue ($)")
+
+boxplot(movie_data$revenue)
+
+```
+
+
+# Initial regression
+
+``` {r setup, echo=FALSE}
+# Subset the data to look at only the weeks we are interested in and remove rows with NA in the budget
+movie_data <- movie_data %>%
+  filter(tom_week_id == "55"|tom_week_id =="54"|tom_week_id =="53"|tom_week_id =="52"|tom_week_id =="51"  & budget != NA & revenue != NA)
+
+summary(movie_data$revenue)
+
+# We are left with 4059 observations
+
+# The mean has changed by not much, which makes sense because we are only taking a 4 week subset of the data
+
+# We want to remove extreme outliers that skew our data
+
+boxplot(movie_data$revenue)
+
+Q <- quantile(movie_data$revenue, probs=c(.25, .75), na.rm = FALSE)
+
+iqr <- IQR(movie_data$revenue)
+
+up <-  Q[2]+3*iqr # Upper Range  
+low<- Q[1]-3*iqr # Lower Range﻿
+
+movie_data_no_outliers <- subset(movie_data, movie_data$revenue > (Q[1] - 3*iqr) & movie_data$revenue < (Q[2]+3*iqr))
+
+# Plot the revenue by week
+
+ggplot(movie_data_no_outliers, aes(x = week, y = revenue)) +
+  geom_point() +
+  #geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +
+  #geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "blue", data = subset(movie_data, tom_week_id == "53"|tom_week_id == "52"|tom_week_id == "51")) +
+  #geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green", data = subset(movie_data, tom_week_id == "55") +
+  labs(title = "Revenue by Week", x = "week", y = "log(Revenue/Budget)")
+
+# Using tom_week_id
+
+ggplot(movie_data, aes(x = tom_week_id, y = revenue)) +
+  geom_point() +
+  #geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +
+  #geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "blue", data = subset(movie_data, tom_week_id == "53"|tom_week_id == "52"|tom_week_id == "51")) +
+  #geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green", data = subset(movie_data, tom_week_id == "55") +
+  labs(title = "Revenue by Week", x = "tom_week_id", y = "log(Revenue/Budget)")
+
+
+
+
+# Run a OLS regression with revenue on tom_week_id
+
+# Run an OLS regression with the log of revenue/budget on week released and the treatment
+ols_model <- lm_robust(revenue ~  tom_week_id, data = movie_data)
+
+
+
+```
+
+
+
+
+
+# Changed the week variable to tom_week_id because the week of year is adjusted so holidays fall on the same week.
+```{r setup, echo=FALSE}
+
+options(scipen = 999)
+movie_data <- read_excel("/Users/juansanchez/Documents/GitHub/Final_Paper_ECON_440/moviedata.xlsx")
+
+# Define the treatment
+movie_data$D <- ifelse(movie_data$tom_week_id == "54"|movie_data$tom_week_id =="55", 1,0)
+
+# Look at the summary stats of the revenue column
+summary(movie_data$revenue)
+
+# Subset the data to look at only the weeks we are interested in and remove rows with NA in the budget
+movie_data <- movie_data %>%
+  filter(tom_week_id == "55"|tom_week_id =="54"|tom_week_id =="53"|tom_week_id =="52"|tom_week_id =="51"  & budget != NA & revenue != NA)
+
+# We are left with 4059 observations
+
+# Run a OLS regression with revenue on 
+
+# Run an OLS regression with the log of revenue/budget on week released and the treatment
+ols_model <- lm_robust(log(revenue/budget) ~  week + D, data = movie_data)
+
+#iv_reg <- ivreg(revenue ~ budget | week, data = subset_data2)
+
+#summary(iv_reg)
+
+summary(ols_model)
+
+# We see that the treatment variable is statistically significant when running a linear regression with HC2 standard errors
+
+exp(coef(ols_model))
+
+# After exponentiating the variable from log, we see that the 
+
+
+
+
+ggplot(movie_data, aes(x = tom_week_id, y = log(revenue/budget))) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "blue", data = subset(movie_data, tom_week_id == "53"|tom_week_id == "52"|tom_week_id == "51")) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green", data = subset(movie_data, tom_week_id == "55"|tom_week_id == "54")) +
+  labs(title = "Revenue by Week", x = "tom_week_id", y = "log(Revenue/Budget)")
+
+
+
+```
+
+Look at min max median and mean
+```{r setup}
+summary(log(movie_data$revenue)
+
+
+```
+
+# Data using a cutoff at the mean revenue
+```{r setup}
+
+subset_data <- movie_data %>%
+  filter(revenue >= 2203023)
+
+
+subset_data <- subset_data %>%
+  filter(tom_week_id == "56"|tom_week_id =="55"|tom_week_id =="54"|tom_week_id =="53"|tom_week_id =="52" ) 
+
+
+
+lm1 <- lm_robust(log(revenue/budget) ~ week + D, data = subset_data)
+summary(lm1)
+
+
+ggplot(subset_data, aes(x = tom_week_id, y = revenue))+
+  geom_point(color = "blue") +  # Scatter plot
+  #geom_smooth(method = "lm", se = FALSE, color = "red") +  # Line of best fit
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "purple", data = subset(subset_data, tom_week_id =="53"|tom_week_id == "52")) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green", data = subset(subset_data, tom_week_id == "54"|tom_week_id =="55")) +
+  labs(title = "Scatter Plot with Line of Best Fit",
+       x = "tom_week_id",
+       y = "log(Revenue/Budget)"
+       )
+```
+
+
+
+```{r setup}
+summary(subset_data$revenue)
+
+#Important
+ggplot(movie_data, aes(x = week, y = revenue)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black", alpha = 0.7) +
+  labs(title = "Bar Plot of Revenue by Week",
+       x = "Week",
+       y = "Revenue ($)")
+
+```
+
+``` {r setup}
+
+subset_data2 <- movie_data %>%
+  filter(revenue >= 2203023)
+
+
+subset_data2 <- subset_data2 %>%
+  filter(tom_week_id == "56"|tom_week_id =="55"|tom_week_id =="54"|tom_week_id =="53"|tom_week_id =="52" ) 
+
+
+#lm1 <- lm_robust(revenue ~ week, data = subset_data)
+#summary(lm1)
+
+
+ggplot(subset_data2, aes(x = week, y = revenue)) +
+  geom_point(color = "blue") +  # Scatter plot
+  #geom_smooth(method = "lm", se = FALSE, color = "red") +  # Line of best fit
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "purple", data = subset(subset_data2, tom_week_id =="53"|tom_week_id == "52")) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green", data = subset(subset_data2, tom_week_id == "54"|tom_week_id =="55")) +
+  labs(title = "Scatter Plot with Line of Best Fit",
+       x = "Week",
+       y = "Revenue ($)"
+       )
+
+
+
+
+
+```
+
+
+# Copy Before
+``` {r setup}
+
+subset_data2 <- movie_data %>%
+  filter(revenue >= 30000000)
+
+
+subset_data2 <- subset_data2 %>%
+  filter(week == "51"|week =="52"|week =="50"|week =="49")
+
+
+
+lm1 <- lm_robust(revenue ~ week, data = subset_data)
+summary(lm1)
+
+
+ggplot(subset_data2, aes(x = week, y = revenue)) +
+  geom_point(color = "blue") +  # Scatter plot
+  geom_smooth(method = "lm", se = FALSE, color = "red") +  # Line of best fit
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "purple", data = subset(subset_data2, week == "49"|week =="50")) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green", data = subset(subset_data2, week == "51"|week =="52")) +
+  labs(title = "Scatter Plot with Line of Best Fit",
+       x = "Week",
+       y = "Revenue ($)"
+       )
+
+
+```
+
+
+
