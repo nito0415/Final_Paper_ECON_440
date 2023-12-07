@@ -26,6 +26,9 @@ library(mlogit)
 
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+movie_data <- read_excel("moviedata.xlsx")
+
+head(movie_data)
 ```
 
 
@@ -35,5 +38,3 @@ plot(pressure)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
-
-fag
