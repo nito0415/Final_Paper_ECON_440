@@ -32,14 +32,22 @@ movie_data$D <- ifelse(movie_data$week == "51"|movie_data$week =="52", 1,0)
 
 # Subset the data to look at only the weeks we are interested in
 movie_data <- movie_data %>%
-  filter(week == "51"|week =="52"|week =="50"|week =="49"|week =="48"| week =="47"| week=="1"| week=="2"| week=="3"| week=="4")
+  filter(week == "51"|week =="52"|week =="50"|week =="49"| week=="1"| week=="2")
 
 
-ols_model <- lm(D ~ cum_revenue, data = movie_data)
+ols_model <- lm(revenue ~ I(week_num^2) + week, data = movie_data)
 
 summary(ols_model)
 
-```
+
+# Plot the data
+ggplot(movie_data, aes(x = week, y = revenue)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Revenue by Week", x = "Week", y = "Revenue")
+
+
+
 ```
 
 
