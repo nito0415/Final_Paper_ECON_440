@@ -30,21 +30,25 @@ movie_data <- read_excel("moviedata.xlsx")
 
 movie_data$D <- ifelse(movie_data$week == "51"|movie_data$week =="52", 1,0)
 
-# Subset the data to look at only the weeks we are interested in
+# Subset the data to look at only the weeks we are interested in subsetting out the outliers
 movie_data <- movie_data %>%
-  filter(week == "51"|week =="52"|week =="50"|week =="49"| week=="1"| week=="2")
+  filter(week == "51"|week =="52"|week =="50"|week =="49", revenue <= 	
+296602355)
 
 
-ols_model <- lm(revenue ~ I(week_num^2) + week, data = movie_data)
+# Plot the data and fit the model seperately fit lines for weeks 49 and 50 and 51 and 52
+ols_model <- lm(log(revenue) ~ I(week_num^2) + market_share + week, data = movie_data)
 
 summary(ols_model)
 
 
-# Plot the data
-ggplot(movie_data, aes(x = week, y = revenue)) +
+ggplot(movie_data, aes(x = week, y = log(revenue))) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
+  #geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "blue", data = subset(movie_data, week == "49"|week =="50")) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green", data = subset(movie_data, week == "51"|week =="52")) +
   labs(title = "Revenue by Week", x = "Week", y = "Revenue")
+
 
 
 
