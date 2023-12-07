@@ -28,6 +28,11 @@ library(estimatr)
 
 
 # Changed the week variable to tom_week_id because the week of year is adjusted so holidays fall on the same week.
+
+# The treatment is significant when running the regression with robust standard errors.
+
+
+
 ```{r setup, echo=FALSE}
 
 options(scipen = 999)
@@ -58,7 +63,8 @@ summary(ols_model)
 
 exp(coef(ols_model))
 
-# After exponentiating the variable from log, we see that the 
+# After exponentiating the variable from log, we see that the treatment variable increases revenue by 1.5 times (Check interpretation)
+
 
 
 
@@ -77,11 +83,11 @@ ggplot(movie_data, aes(x = tom_week_id, y = log(revenue/budget))) +
 Look at min max median and mean
 ```{r setup}
 summary(movie_data$revenue)
-
-
 ```
 
 # Data using a cutoff at the mean revenue
+
+# vvv Haven't worked on this yet vvv
 ```{r setup}
 
 subset_data <- movie_data %>%
