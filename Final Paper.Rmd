@@ -1,0 +1,37 @@
+---
+title: "Final Paper"
+author: "Juan Sanchez, Jared Picco"
+date: "2023-12-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 60), tidy = TRUE)
+library(tidyverse)
+library(dplyr)
+library(plm)
+library(ggplot2)
+library(lmtest)
+library(sandwich)
+library(knitr)
+library(broom)
+library(readxl)
+library(AER)
+library(stargazer)
+library(foreign)
+library(Hmisc)
+library(MatchIt)
+library(mlogit)
+```
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
