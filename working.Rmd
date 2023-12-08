@@ -274,7 +274,7 @@ ggplot(subset_data2, aes(x = week, y = revenue)) +
 
 
 
-
+``` {r setup}
 movie_data <- movie_data %>%
   filter(tom_week_id == "55"|tom_week_id =="54"|tom_week_id =="53"|tom_week_id =="52"|tom_week_id =="51"  & budget != NA & revenue != NA)
 
@@ -282,7 +282,7 @@ data_high_rev <- movie_data %>%
   filter(revenue >= 29000000)
 
 data_normal_rev <- movie_data %>%
-  filter(revenue <= 29000000)
+  filter(revenue < 29000000)
 
 ols_model1_HR <- lm_robust(revenue ~  tom_week_id, data = data_high_rev)
 ols_model1_NR <- lm_robust(revenue ~  tom_week_id, data = data_normal_rev)
@@ -292,7 +292,18 @@ summary(ols_model1_NR)
 ggplot(data_high_rev, aes(x = tom_week_id, y = revenue)) +
   geom_point() +
   #geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +
-  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "blue", data = data_high_rev, tom_week_id == "52"|tom_week_id == "53") +
-  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green", tom_week_id == "54"|tom_week_id == "55") +
-  labs(title = "Revenue by Week", x = "tom_week_id", y = "Revenue")
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red", data = subset(data_high_rev, tom_week_id == "53"|tom_week_id == "54")) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "blue", data = subset(data_high_rev, tom_week_id == "52"|tom_week_id == "53")) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green",data = subset(data_high_rev, tom_week_id == "54"|tom_week_id == "55")) +
+  labs(title = "Revenue by Week (High Revenue Movies)", x = "tom_week_id", y = "Revenue")
 
+ggplot(data_normal_rev, aes(x = tom_week_id, y = revenue)) +
+  geom_point() +
+  #geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "red", data = subset(data_normal_rev, tom_week_id == "53"|tom_week_id == "54")) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "blue", data = subset(data_normal_rev, tom_week_id == "52"|tom_week_id == "53")) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green",data = subset(data_normal_rev, tom_week_id == "54"|tom_week_id == "55")) +
+  labs(title = "Revenue by Week (Normal Revenue Movies)", x = "tom_week_id", y = "Revenue")
+
+
+```
