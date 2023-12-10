@@ -312,7 +312,7 @@ ggplot(data_normal_rev, aes(x = tom_week_id, y = revenue)) +
 
 # RDD Model Specification
 
-```{r setup}
+```{r}
 # Define the treatment
 data_high_rev$D <- ifelse(data_high_rev$tom_week_id == "54"|data_high_rev$tom_week_id =="55", 1,0)
 data_normal_rev$D <- ifelse(data_normal_rev$tom_week_id == "54"|data_normal_rev$tom_week_id =="55", 1,0)
@@ -328,8 +328,17 @@ summary(rdd_model1_NR)
 rd_high <- ivreg(revenue ~ tom_week_id| D, data = data_high_rev)
 rd_norm <- ivreg(revenue ~ tom_week_id| D, data = data_normal_rev)
 
+rd_high <- ivreg(revenue ~ tom_week_id + budget + population| D, data = data_high_rev)
+rd_norm <- ivreg(revenue ~ tom_week_id + budget + population| D, data = data_normal_rev)
+
 summary(rd_high)
 summary(rd_norm)
+
+# Create and export the table of the regression discontinuity models using kable
+
+
+
+
 
 # Predict the values of the regression discontinuity model and plot them
 predicted_values_HR <- data_high_rev %>%
@@ -352,6 +361,19 @@ ggplot(predicted_values_NR, aes(x = tom_week_id, y = revenue)) +
   geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "blue", data = subset(data_normal_rev, tom_week_id == "53"|tom_week_id == "54")) +
   geom_smooth(method = "lm", formula = y ~ x, se = FALSE, color = "green", data = subset(data_normal_rev, tom_week_id == "54"|tom_week_id == "55")) +
   labs(title = "Revenue by Week (Normal Revenue Movies)", x = "tom_week_id", y = "Revenue")
+
+
+# Define the treatment
+data_high_rev$D <- ifelse(data_high_rev$tom_week_id == "54"|data_high_rev$tom_week_id =="55", 1,0)
+data_normal_rev$D <- ifelse(data_normal_rev$tom_week_id == "54"|data_normal_rev$tom_week_id =="55", 1,0)
+
+rd_high <- ivreg(revenue ~ tom_week_id| D, data = data_high_rev)
+rd_norm <- ivreg(revenue ~ tom_week_id| D, data = data_normal_rev)
+
+tidy_rd_high <- tidy(rd_high)
+tidy_rd_norm <- tidy(rd_norm)
+
+stargazer(tidy_rd_high,tidy_rd_norm )
 
 ```
 
